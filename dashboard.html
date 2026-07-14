@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Kominfotik</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        html, body { height: 100%; overflow: hidden; }
+        #main-scroll-area { overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+        #main-scroll-area::-webkit-scrollbar { width: 6px; }
+        #main-scroll-area::-webkit-scrollbar-track { background: #f1f5f9; }
+        #main-scroll-area::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); border-radius: 10px; }
+        
+        .gradient-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-sidebar { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15); }
+        
+        .nav-item { transition: all 0.3s ease; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); transform: translateX(4px); }
+        .nav-item.active { background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%); border-left: 4px solid #667eea; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        
+        .stat-gradient-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-gradient-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-gradient-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-gradient-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-gradient-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .stat-gradient-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+        
+        .table-row { transition: all 0.2s; }
+        .table-row:hover { background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); }
+        
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4); }
+        
+        .input-focus:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        
+        .reminder-notification { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .progress-bar {
+            transition: width 0.8s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased">
+
+    <!-- OVERLAY LOGOUT -->
+    <div id="logout-overlay" class="fixed inset-0 z-[200] gradient-sidebar flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10 text-center animate-fade-in">
+            <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/30">
+                <span class="text-5xl">✓</span>
+            </div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-3">Berhasil Keluar</h2>
+            <p class="text-slate-500 mb-8 text-lg">Sampai jumpa kembali!</p>
+            <button onclick="window.location.href='login.html'" class="w-full btn-primary text-white font-bold py-3.5 rounded-xl cursor-pointer">Masuk Kembali</button>
+        </div>
+    </div>
+
+    <!-- OVERLAY SIDEBAR MOBILE -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 gradient-sidebar text-white flex flex-col z-50 transform -translate-x-full transition-transform duration-300 ease-out shadow-2xl md:translate-x-0">
+        <div class="p-6 border-b border-slate-700/50 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <img id="sidebar-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=60" alt="Avatar" class="w-12 h-12 rounded-xl object-cover border-2 border-purple-300/30 shadow-lg">
+                <div>
+                    <h1 class="font-bold text-xl tracking-tight">Siswa</h1>
+                    <p class="text-xs text-slate-400">Dashboard Magang</p>
+                </div>
+            </div>
+            <button id="closeSidebar" class="md:hidden text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-700/50 transition">✕</button>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <button data-target="page-ringkasan" class="nav-link nav-item active w-full flex items-center space-x-3 text-white px-5 py-3.5 rounded-xl font-semibold text-sm cursor-pointer text-left">
+                <span class="text-xl">📊</span> <span>Beranda</span>
+            </button>
+            <button data-target="page-siswa" class="nav-link nav-item w-full flex items-center space-x-3 text-slate-400 hover:text-white px-5 py-3.5 rounded-xl font-medium text-sm cursor-pointer text-left">
+                <span class="text-xl">👥</span> <span>Data Siswa</span>
+            </button>
+            <button data-target="page-laporan" class="nav-link nav-item w-full flex items-center space-x-3 text-slate-400 hover:text-white px-5 py-3.5 rounded-xl font-medium text-sm cursor-pointer text-left">
+                <span class="text-xl">📝</span> <span>Laporan Harian</span>
+            </button>
+            <button data-target="page-pengaturan" class="nav-link nav-item w-full flex items-center space-x-3 text-slate-400 hover:text-white px-5 py-3.5 rounded-xl font-medium text-sm cursor-pointer text-left">
+                <span class="text-xl">️⚙️</span> <span>Pengaturan</span>
+            </button>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-700/50 flex-shrink-0">
+            <button onclick="logoutSession()" class="w-full flex items-center space-x-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 p-3 rounded-xl text-sm font-semibold transition cursor-pointer group">
+                <span class="text-xl group-hover:scale-110 transition-transform">🚪</span> <span>Keluar Aplikasi</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div id="main-scroll-area" class="md:ml-72 flex flex-col min-h-screen bg-slate-50">
+        
+        <!-- NAVBAR -->
+        <header class="glass-effect border-b border-slate-200/60 h-20 flex items-center justify-between px-8 sticky top-0 z-30 flex-shrink-0 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button id="openSidebar" class="md:hidden text-slate-600 text-2xl p-2 -ml-2 rounded-xl hover:bg-slate-100 transition cursor-pointer">☰</button>
+                <div>
+                    <h2 id="navbar-title" class="text-2xl font-bold text-slate-800">Selamat Datang 👋</h2>
+                    <p class="text-sm text-slate-500 hidden sm:block" id="current-date"></p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 bg-white/80 backdrop-blur-sm rounded-2xl py-2 pl-2 pr-6 shadow-sm border border-slate-200/60">
+                <img id="navbar-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=60" alt="Avatar" class="w-11 h-11 rounded-xl object-cover border-2 border-purple-200">
+                <div>
+                    <p class="text-sm font-bold text-slate-800 user-name-display">Nama User</p>
+                    <p class="text-xs text-slate-500 font-medium user-role-display">Role</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- KONTEN UTAMA -->
+        <main class="flex-1 p-6 sm:p-8 space-y-8">
+            
+            <!-- 1. HALAMAN RINGKASAN -->
+            <div id="page-ringkasan" class="page-content space-y-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card-hover stat-gradient-1 p-6 rounded-2xl text-white shadow-xl shadow-purple-500/20">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-purple-100 text-sm font-semibold uppercase tracking-wider">Total Siswa</p>
+                                <h3 id="stat-total-siswa" class="text-4xl font-bold mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl backdrop-blur-sm">👥</div>
+                        </div>
+                        <div class="text-purple-100 text-sm font-medium">Aktif magang saat ini</div>
+                    </div>
+
+                    <div class="card-hover stat-gradient-2 p-6 rounded-2xl text-white shadow-xl shadow-pink-500/20">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-pink-100 text-sm font-semibold uppercase tracking-wider">Laporan Masuk</p>
+                                <h3 id="stat-total-laporan" class="text-4xl font-bold mt-2">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl backdrop-blur-sm">📄</div>
+                        </div>
+                        <div class="text-pink-100 text-sm font-medium">Total laporan terkirim</div>
+                    </div>
+
+                    <div class="card-hover stat-gradient-3 p-6 rounded-2xl text-white shadow-xl shadow-cyan-500/20">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-cyan-100 text-sm font-semibold uppercase tracking-wider">Kehadiran</p>
+                                <h3 class="text-4xl font-bold mt-2">100%</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl backdrop-blur-sm">✅</div>
+                        </div>
+                        <div class="text-cyan-100 text-sm font-medium">Hadir hari ini</div>
+                    </div>
+                </div>
+
+                <!-- 🆕 STATISTIK LAPORAN HARIAN -->
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-purple-500/20">📊</div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg">Statistik Laporan Harian</h3>
+                                <p class="text-xs text-slate-500">Breakdown status laporan</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Disetujui -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        <span class="text-sm font-semibold text-slate-700">Disetujui</span>
+                                    </div>
+                                    <span id="stat-disetujui-count" class="text-2xl font-bold text-green-600">0</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="progress-disetujui" class="progress-bar bg-gradient-to-r from-green-400 to-emerald-600 h-full rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p id="stat-disetujui-persen" class="text-xs text-slate-500">0% dari total</p>
+                            </div>
+
+                            <!-- Pending -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                        <span class="text-sm font-semibold text-slate-700">Pending</span>
+                                    </div>
+                                    <span id="stat-pending-count" class="text-2xl font-bold text-yellow-600">0</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="progress-pending" class="progress-bar bg-gradient-to-r from-yellow-400 to-orange-500 h-full rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p id="stat-pending-persen" class="text-xs text-slate-500">0% dari total</p>
+                            </div>
+
+                            <!-- Ditolak -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                        <span class="text-sm font-semibold text-slate-700">Ditolak</span>
+                                    </div>
+                                    <span id="stat-ditolak-count" class="text-2xl font-bold text-red-600">0</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div id="progress-ditolak" class="progress-bar bg-gradient-to-r from-red-400 to-rose-600 h-full rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p id="stat-ditolak-persen" class="text-xs text-slate-500">0% dari total</p>
+                            </div>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-100">
+                            <div class="text-center p-4 bg-green-50 rounded-xl border border-green-100">
+                                <div class="text-3xl mb-2">✓</div>
+                                <p class="text-xs text-green-600 font-semibold uppercase mb-1">Tingkat Persetujuan</p>
+                                <p id="stat-approval-rate" class="text-2xl font-bold text-green-700">0%</p>
+                            </div>
+                            <div class="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                <div class="text-3xl mb-2">📈</div>
+                                <p class="text-xs text-blue-600 font-semibold uppercase mb-1">Rata-rata per Hari</p>
+                                <p id="stat-avg-per-day" class="text-2xl font-bold text-blue-700">0</p>
+                            </div>
+                            <div class="text-center p-4 bg-purple-50 rounded-xl border border-purple-100">
+                                <div class="text-3xl mb-2">👤</div>
+                                <p class="text-xs text-purple-600 font-semibold uppercase mb-1">Total Pembuat</p>
+                                <p id="stat-total-authors" class="text-2xl font-bold text-purple-700">0</p>
+                            </div>
+                            <div class="text-center p-4 bg-orange-50 rounded-xl border border-orange-100">
+                                <div class="text-3xl mb-2">📅</div>
+                                <p class="text-xs text-orange-600 font-semibold uppercase mb-1">Hari Aktif</p>
+                                <p id="stat-active-days" class="text-2xl font-bold text-orange-700">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-slate-50 to-white">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center text-white shadow-lg shadow-purple-500/20">📋</div>
+                            <h3 class="font-bold text-slate-800 text-lg">Aktivitas Laporan Terbaru</h3>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/80 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
+                                    <th class="p-5">Nama Siswa</th>
+                                    <th class="p-5">Judul Aktivitas</th>
+                                    <th class="p-5">Tanggal</th>
+                                    <th class="p-5">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ringkasan-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. HALAMAN DATA SISWA -->
+            <div id="page-siswa" class="page-content space-y-6 hidden">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-500/20 text-2xl">👥</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Manajemen Data Siswa</h3>
+                            <p class="text-slate-500 text-sm">Kelola data siswa magang</p>
+                        </div>
+                    </div>
+                    <button onclick="openFormSiswaModal()" class="btn-primary text-white text-sm font-bold px-6 py-3 rounded-xl cursor-pointer flex items-center gap-2 shadow-lg shadow-purple-500/30">
+                        <span>+</span> Tambah Siswa
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-5 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100">
+                        <div class="relative max-w-md">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">🔍</span>
+                            <input id="search-siswa" type="text" placeholder="Cari siswa berdasarkan nama atau divisi..." class="w-full pl-12 pr-4 py-3 text-sm bg-white border border-slate-200 rounded-xl input-focus transition-all shadow-sm">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/80 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
+                                    <th class="p-5">Nama Lengkap</th>
+                                    <th class="p-5">NISN / ID</th>
+                                    <th class="p-5">Divisi</th>
+                                    <th class="p-5">Asal Sekolah</th>
+                                    <th class="p-5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-siswa-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. HALAMAN LAPORAN HARIAN -->
+            <div id="page-laporan" class="page-content space-y-6 hidden">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-500/20 text-2xl">📝</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-slate-800">Laporan Aktivitas Harian</h3>
+                            <p class="text-slate-500 text-sm">Monitor dan kelola laporan siswa</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 flex-wrap">
+                        <button onclick="toggleModal('modal-laporan', true)" class="btn-primary text-white text-sm font-bold px-6 py-3 rounded-xl cursor-pointer flex items-center gap-2 shadow-lg shadow-purple-500/30">
+                            <span>✍️</span> Buat Laporan
+                        </button>
+                        <button onclick="resetDataLaporan()" class="bg-white hover:bg-orange-50 text-orange-600 border-2 border-orange-200 hover:border-orange-300 text-sm font-bold px-6 py-3 rounded-xl transition cursor-pointer flex items-center gap-2">
+                            <span></span> Reset
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Filter Status</label>
+                        <select id="filter-status-laporan" class="w-full px-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl input-focus transition-all cursor-pointer">
+                            <option value="Semua">Semua Status</option>
+                            <option value="Disetujui">Disetujui</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Ditolak">Ditolak</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Cari Laporan</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                            <input id="search-laporan" type="text" placeholder="Cari judul, nama, atau detail..." class="w-full pl-11 pr-4 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl input-focus transition-all">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="laporan-cards-container" class="space-y-4"></div>
+            </div>
+
+            <!-- 4. HALAMAN PENGATURAN PROFIL -->
+            <div id="page-pengaturan" class="page-content hidden">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-purple-500/20 text-2xl">⚙️</div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-800">Pengaturan Profil</h3>
+                        <p class="text-slate-500 text-sm">Kelola informasi akun Anda</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden max-w-3xl">
+                    <form id="form-profil-setting" class="p-8 space-y-8">
+                        <div class="flex items-center space-x-8 border-b border-slate-100 pb-8 flex-wrap">
+                            <div class="relative group">
+                                <img id="setting-avatar-preview" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=60" alt="Preview" class="w-28 h-28 rounded-2xl object-cover shadow-lg border-4 border-purple-100">
+                                <div class="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                    <span class="text-white text-3xl"></span>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">Foto Profil</h4>
+                                <p class="text-sm text-slate-500 mb-4">Unggah foto profil baru untuk memperbarui tampilan akun Anda.</p>
+                                <input type="file" id="input-avatar-file" accept="image/*" class="text-sm text-slate-600 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer transition-all">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap</label>
+                                <input id="profile-name-input" type="text" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50 focus:bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Role / Posisi</label>
+                                <input id="profile-role-input" type="text" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50 focus:bg-white">
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end pt-6 border-t border-slate-100">
+                            <button type="submit" class="btn-primary text-white text-sm font-bold px-8 py-3.5 rounded-xl cursor-pointer shadow-lg shadow-purple-500/30">💾 Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL FORM SISWA -->
+    <div id="modal-siswa" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center text-white">👤</div>
+                <h3 id="modal-siswa-title" class="text-xl font-bold text-slate-800">Tambah Data Siswa Baru</h3>
+            </div>
+            
+            <form id="form-tambah-siswa" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Nama Lengkap</label>
+                    <input type="text" id="siswa-nama" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">NISN / ID</label>
+                    <input type="text" id="siswa-nisn" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Divisi</label>
+                    <input type="text" id="siswa-divisi" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Asal Sekolah</label>
+                    <input type="text" id="siswa-sekolah" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50">
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="toggleModal('modal-siswa', false)" class="px-6 py-3 text-sm font-bold bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition cursor-pointer">Batal</button>
+                    <button type="submit" class="px-6 py-3 text-sm font-bold btn-primary rounded-xl text-white cursor-pointer shadow-lg shadow-purple-500/30">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL FORM LAPORAN -->
+    <div id="modal-laporan" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center text-white">📝</div>
+                <h3 class="text-xl font-bold text-slate-800">Buat Laporan Aktivitas</h3>
+            </div>
+            
+            <form id="form-tambah-laporan" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Nama Pembuat Laporan</label>
+                    <input type="text" id="laporan-nama" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Judul Aktivitas</label>
+                    <input type="text" id="laporan-judul" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Detail Kegiatan</label>
+                    <textarea id="laporan-detail" rows="4" required class="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm input-focus transition-all bg-slate-50 resize-none"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="toggleModal('modal-laporan', false)" class="px-6 py-3 text-sm font-bold bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition cursor-pointer">Batal</button>
+                    <button type="submit" class="px-6 py-3 text-sm font-bold bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-white cursor-pointer shadow-lg shadow-green-500/30">Kirim Laporan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION CONTAINER -->
+    <div id="notification-container" class="fixed top-4 right-4 z-[300] space-y-2"></div>
+
+    <script>
+        // ============================================
+        // 🔐 CEK STATUS LOGIN
+        // ============================================
+        if (localStorage.getItem('is_logged_in') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', dateOptions);
+
+        // ============================================
+        // 📊 SEED DATA AWAL
+        // ============================================
+        const defaultSiswa = [
+            { id: 1, nama: 'Ryuka', nisn: '222310452', divisi: 'Web Developer', sekolah: 'SMKN 1 Jakarta' },
+            { id: 2, nama: 'Culip', nisn: '222310459', divisi: 'UI/UX Designer', sekolah: 'SMK Taruna Nusantara' },
+            { id: 3, nama: 'Andi', nisn: '222310460', divisi: 'Backend Developer', sekolah: 'SMKN 2 Bandung' }
+        ];
+
+        const defaultLaporan = [
+            { id: 1, nama: 'Ryuka', judul: 'Implementasi Layout Sidebar Responsive', tanggal: '07 Juli 2026', status: 'Disetujui', detail: 'Hari ini saya berhasil merombak sidebar agar mendukung responsive mobile screen.' },
+            { id: 2, nama: 'Culip', judul: 'Membuat Design High-Fidelity Aplikasi Dashboard', tanggal: '07 Juli 2026', status: 'Pending', detail: 'Menyelesaikan pembuatan wireframe halaman pengaturan profil.' },
+            { id: 3, nama: 'Andi', judul: 'Membangun sebuah website modern', tanggal: '08 Juli 2026', status: 'Pending', detail: 'Kali ini saya membuat sebuah website modern dan kekinian.' },
+            { id: 4, nama: 'Culip', judul: 'Membuat laporan', tanggal: '08 Juli 2026', status: 'Pending', detail: 'Mengerjakan rekapitulasi data harian.' }
+        ];
+
+        const defaultProfile = {
+            nama: 'fazri developer',
+            role: 'Administrator',
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=60'
+        };
+
+        if (!localStorage.getItem('data_siswa')) localStorage.setItem('data_siswa', JSON.stringify(defaultSiswa));
+        if (!localStorage.getItem('data_laporan')) localStorage.setItem('data_laporan', JSON.stringify(defaultLaporan));
+        if (!localStorage.getItem('user_profile')) localStorage.setItem('user_profile', JSON.stringify(defaultProfile));
+
+        let editSiswaId = null;
+
+        // ============================================
+        // 🎨 DOM SELECTORS
+        // ============================================
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const openBtn = document.getElementById('openSidebar');
+        const closeBtn = document.getElementById('closeSidebar');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageContents = document.querySelectorAll('.page-content');
+        const navbarTitle = document.getElementById('navbar-title');
+        const mainScrollArea = document.getElementById('main-scroll-area');
+
+        // ============================================
+        // 🚪 FUNGSI LOGOUT
+        // ============================================
+        function logoutSession() {
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                localStorage.removeItem('is_logged_in');
+                document.getElementById('logout-overlay').classList.remove('hidden');
+            }
+        }
+
+        // ============================================
+        // 📱 SIDEBAR
+        // ============================================
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+
+        openBtn.addEventListener('click', openSidebar);
+        closeBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+
+        // ============================================
+        // 🧭 NAVIGASI
+        // ============================================
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                const targetPage = link.getAttribute('data-target');
+                
+                navLinks.forEach(l => {
+                    l.classList.remove('active', 'text-white');
+                    l.classList.add('text-slate-400');
+                });
+                link.classList.remove('text-slate-400');
+                link.classList.add('active', 'text-white');
+
+                pageContents.forEach(page => page.classList.add('hidden'));
+                document.getElementById(targetPage).classList.remove('hidden');
+
+                const titleMap = {
+                    'page-ringkasan': 'Selamat Datang 👋',
+                    'page-siswa': 'Data Siswa',
+                    'page-laporan': 'Laporan Harian',
+                    'page-pengaturan': 'Pengaturan'
+                };
+                navbarTitle.textContent = titleMap[targetPage];
+
+                mainScrollArea.scrollTo({ top: 0, behavior: 'smooth' });
+
+                if (window.innerWidth < 768) closeSidebar();
+
+                if (targetPage === 'page-ringkasan') renderRingkasan();
+                if (targetPage === 'page-siswa') renderSiswa();
+                if (targetPage === 'page-laporan') renderLaporan();
+            });
+        });
+
+        // ============================================
+        // 📈 RENDER FUNCTIONS
+        // ============================================
+        function renderRingkasan() {
+            const siswa = JSON.parse(localStorage.getItem('data_siswa'));
+            const laporan = JSON.parse(localStorage.getItem('data_laporan'));
+
+            document.getElementById('stat-total-siswa').textContent = siswa.length;
+            document.getElementById('stat-total-laporan').textContent = laporan.length;
+
+            // 🆕 Hitung statistik laporan
+            const totalLaporan = laporan.length;
+            const disetujui = laporan.filter(l => l.status === 'Disetujui').length;
+            const pending = laporan.filter(l => l.status === 'Pending').length;
+            const ditolak = laporan.filter(l => l.status === 'Ditolak').length;
+
+            // Update count
+            document.getElementById('stat-disetujui-count').textContent = disetujui;
+            document.getElementById('stat-pending-count').textContent = pending;
+            document.getElementById('stat-ditolak-count').textContent = ditolak;
+
+            // Update persentase
+            if (totalLaporan > 0) {
+                const persenDisetujui = ((disetujui / totalLaporan) * 100).toFixed(1);
+                const persenPending = ((pending / totalLaporan) * 100).toFixed(1);
+                const persenDitolak = ((ditolak / totalLaporan) * 100).toFixed(1);
+
+                document.getElementById('stat-disetujui-persen').textContent = `${persenDisetujui}% dari total`;
+                document.getElementById('stat-pending-persen').textContent = `${persenPending}% dari total`;
+                document.getElementById('stat-ditolak-persen').textContent = `${persenDitolak}% dari total`;
+
+                // Update progress bar
+                setTimeout(() => {
+                    document.getElementById('progress-disetujui').style.width = `${persenDisetujui}%`;
+                    document.getElementById('progress-pending').style.width = `${persenPending}%`;
+                    document.getElementById('progress-ditolak').style.width = `${persenDitolak}%`;
+                }, 100);
+
+                // Approval rate
+                const approvalRate = ((disetujui / totalLaporan) * 100).toFixed(1);
+                document.getElementById('stat-approval-rate').textContent = `${approvalRate}%`;
+            } else {
+                document.getElementById('stat-disetujui-persen').textContent = '0% dari total';
+                document.getElementById('stat-pending-persen').textContent = '0% dari total';
+                document.getElementById('stat-ditolak-persen').textContent = '0% dari total';
+                document.getElementById('progress-disetujui').style.width = '0%';
+                document.getElementById('progress-pending').style.width = '0%';
+                document.getElementById('progress-ditolak').style.width = '0%';
+                document.getElementById('stat-approval-rate').textContent = '0%';
+            }
+
+            // Rata-rata per hari
+            const uniqueDates = [...new Set(laporan.map(l => l.tanggal))];
+            const avgPerDay = uniqueDates.length > 0 ? (totalLaporan / uniqueDates.length).toFixed(1) : 0;
+            document.getElementById('stat-avg-per-day').textContent = avgPerDay;
+
+            // Total pembuat laporan unik
+            const uniqueAuthors = [...new Set(laporan.map(l => l.nama))].length;
+            document.getElementById('stat-total-authors').textContent = uniqueAuthors;
+
+            // Hari aktif
+            document.getElementById('stat-active-days').textContent = uniqueDates.length;
+
+            // Render tabel aktivitas terbaru
+            const tbody = document.getElementById('table-ringkasan-body');
+            tbody.innerHTML = '';
+            
+            if (laporan.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">Belum ada laporan</td></tr>';
+                return;
+            }
+            
+            laporan.slice(0, 5).forEach(lap => {
+                let statusClass, statusIcon;
+                if (lap.status === 'Disetujui') { statusClass = 'text-green-600 bg-green-50 border border-green-200'; statusIcon = '✓'; }
+                else if (lap.status === 'Ditolak') { statusClass = 'text-red-600 bg-red-50 border border-red-200'; statusIcon = '✗'; }
+                else { statusClass = 'text-yellow-600 bg-yellow-50 border border-yellow-200'; statusIcon = '⏳'; }
+                
+                tbody.innerHTML += `
+                    <tr class="table-row">
+                        <td class="p-5 font-semibold text-slate-700">${lap.nama}</td>
+                        <td class="p-5 text-slate-600">${lap.judul}</td>
+                        <td class="p-5 text-slate-500">${lap.tanggal}</td>
+                        <td class="p-5"><span class="px-3 py-1.5 rounded-lg text-xs font-bold ${statusClass}">${statusIcon} ${lap.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderSiswa(searchTerm = '') {
+            let siswa = JSON.parse(localStorage.getItem('data_siswa'));
+            
+            if (searchTerm) {
+                siswa = siswa.filter(s => s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || s.divisi.toLowerCase().includes(searchTerm.toLowerCase()));
+            }
+
+            const tbody = document.getElementById('table-siswa-body');
+            tbody.innerHTML = '';
+
+            if (siswa.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">Tidak ada data siswa</td></tr>';
+                return;
+            }
+
+            siswa.forEach(s => {
+                tbody.innerHTML += `
+                    <tr class="table-row">
+                        <td class="p-5 font-semibold text-slate-700">${s.nama}</td>
+                        <td class="p-5 text-slate-600 font-mono text-xs">${s.nisn}</td>
+                        <td class="p-5"><span class="px-3 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">${s.divisi}</span></td>
+                        <td class="p-5 text-slate-500">${s.sekolah}</td>
+                        <td class="p-5 text-center">
+                            <button onclick="editSiswa(${s.id})" class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-lg transition cursor-pointer mx-1" title="Edit">✏️</button>
+                            <button onclick="deleteSiswa(${s.id})" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition cursor-pointer mx-1" title="Hapus">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderLaporan(filterStatus = 'Semua', searchTerm = '') {
+            let laporan = JSON.parse(localStorage.getItem('data_laporan'));
+            
+            if (filterStatus !== 'Semua') laporan = laporan.filter(l => l.status === filterStatus);
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                laporan = laporan.filter(l => l.judul.toLowerCase().includes(term) || l.nama.toLowerCase().includes(term) || l.detail.toLowerCase().includes(term));
+            }
+
+            const container = document.getElementById('laporan-cards-container');
+            container.innerHTML = '';
+
+            if (laporan.length === 0) {
+                container.innerHTML = `<div class="text-center py-16 bg-white rounded-2xl border border-slate-200"><div class="text-6xl mb-4">📭</div><p class="text-slate-600 font-bold text-lg">Tidak ada laporan ditemukan</p><p class="text-slate-400 text-sm mt-2">Coba ubah filter atau kata kunci pencarian</p></div>`;
+                return;
+            }
+
+            laporan.forEach(lap => {
+                let borderColor, statusBadge, actionButtons;
+                
+                if (lap.status === 'Disetujui') {
+                    borderColor = 'border-green-500';
+                    statusBadge = '<span class="px-4 py-1.5 rounded-lg text-xs font-bold bg-green-100 text-green-700 border border-green-200 flex items-center gap-1.5">✓ Disetujui</span>';
+                    actionButtons = `<button onclick="tolakLaporan(${lap.id})" class="text-red-600 hover:text-red-800 hover:bg-red-50 text-sm font-bold px-4 py-2 rounded-lg transition cursor-pointer border border-red-200">✗ Tolak</button><button onclick="deleteLaporan(${lap.id})" class="text-slate-500 hover:text-red-600 hover:bg-red-50 text-sm px-4 py-2 rounded-lg transition cursor-pointer">🗑️</button>`;
+                } else if (lap.status === 'Ditolak') {
+                    borderColor = 'border-red-500';
+                    statusBadge = '<span class="px-4 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-200 flex items-center gap-1.5">✗ Ditolak</span>';
+                    actionButtons = `<button onclick="setujuiLaporan(${lap.id})" class="text-green-600 hover:text-green-800 hover:bg-green-50 text-sm font-bold px-4 py-2 rounded-lg transition cursor-pointer border border-green-200">✓ Setujui Ulang</button><button onclick="deleteLaporan(${lap.id})" class="text-slate-500 hover:text-red-600 hover:bg-red-50 text-sm px-4 py-2 rounded-lg transition cursor-pointer">🗑️</button>`;
+                } else {
+                    borderColor = 'border-yellow-500';
+                    statusBadge = '<span class="px-4 py-1.5 rounded-lg text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200 flex items-center gap-1.5">⏳ Pending</span>';
+                    actionButtons = `<button onclick="setujuiLaporan(${lap.id})" class="text-green-600 hover:text-green-800 hover:bg-green-50 text-sm font-bold px-4 py-2 rounded-lg transition cursor-pointer border border-green-200 bg-green-50">✓ Setujui</button><button onclick="tolakLaporan(${lap.id})" class="text-red-600 hover:text-red-800 hover:bg-red-50 text-sm font-bold px-4 py-2 rounded-lg transition cursor-pointer border border-red-200 bg-red-50">✗ Tolak</button><button onclick="deleteLaporan(${lap.id})" class="text-slate-500 hover:text-red-600 hover:bg-red-50 text-sm px-4 py-2 rounded-lg transition cursor-pointer">🗑️</button>`;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl border-l-4 ${borderColor} shadow-sm hover:shadow-md transition-all card-hover">
+                        <div class="flex justify-between items-start mb-4 flex-wrap gap-3">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-slate-800 text-lg mb-1">${lap.judul}</h4>
+                                <p class="text-sm text-slate-500">Oleh: <span class="font-semibold text-slate-700">${lap.nama}</span></p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">${lap.detail}</p>
+                        ${lap.alasanTolak ? `<div class="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-sm text-red-700"><strong>⚠️ Alasan Ditolak:</strong> ${lap.alasanTolak}</div>` : ''}
+                        <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-100 pt-4 flex-wrap gap-3">
+                            <span class="flex items-center gap-1.5">📅 ${lap.tanggal}</span>
+                            <div class="flex gap-2">${actionButtons}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function setujuiLaporan(id) {
+            if (confirm('Apakah Anda yakin ingin menyetujui laporan ini?')) {
+                let laporan = JSON.parse(localStorage.getItem('data_laporan'));
+                const index = laporan.findIndex(l => l.id === id);
+                if (index !== -1) {
+                    laporan[index].status = 'Disetujui';
+                    delete laporan[index].alasanTolak;
+                    localStorage.setItem('data_laporan', JSON.stringify(laporan));
+                    renderLaporan(document.getElementById('filter-status-laporan').value, document.getElementById('search-laporan').value);
+                    renderRingkasan();
+                    showNotification('Laporan berhasil disetujui!', 'success');
+                }
+            }
+        }
+
+        function tolakLaporan(id) {
+            const alasan = prompt('Masukkan alasan penolakan (opsional):');
+            if (alasan !== null) {
+                let laporan = JSON.parse(localStorage.getItem('data_laporan'));
+                const index = laporan.findIndex(l => l.id === id);
+                if (index !== -1) {
+                    laporan[index].status = 'Ditolak';
+                    laporan[index].alasanTolak = alasan || 'Tidak ada alasan';
+                    localStorage.setItem('data_laporan', JSON.stringify(laporan));
+                    renderLaporan(document.getElementById('filter-status-laporan').value, document.getElementById('search-laporan').value);
+                    renderRingkasan();
+                    showNotification('Laporan ditolak', 'error');
+                }
+            }
+        }
+
+        function resetDataLaporan() {
+            if (confirm('Reset semua data laporan ke data awal?')) {
+                localStorage.setItem('data_laporan', JSON.stringify(defaultLaporan));
+                document.getElementById('filter-status-laporan').value = 'Semua';
+                document.getElementById('search-laporan').value = '';
+                renderLaporan();
+                renderRingkasan();
+                showNotification('Data laporan berhasil direset!', 'success');
+            }
+        }
+
+        function showNotification(content, type = 'success') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-gradient-to-r from-green-500 to-emerald-600',
+                error: 'bg-gradient-to-r from-red-500 to-rose-600',
+                warning: 'bg-gradient-to-r from-amber-500 to-orange-600',
+                info: 'bg-gradient-to-r from-blue-500 to-indigo-600'
+            };
+            
+            notification.className = `reminder-notification ${colors[type]} text-white px-6 py-4 rounded-xl shadow-2xl max-w-sm`;
+            notification.innerHTML = content;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        function openFormSiswaModal() {
+            editSiswaId = null;
+            document.getElementById('modal-siswa-title').textContent = 'Tambah Data Siswa Baru';
+            document.getElementById('form-tambah-siswa').reset();
+            toggleModal('modal-siswa', true);
+        }
+
+        function editSiswa(id) {
+            const siswa = JSON.parse(localStorage.getItem('data_siswa'));
+            const s = siswa.find(x => x.id === id);
+            if (s) {
+                editSiswaId = id;
+                document.getElementById('modal-siswa-title').textContent = 'Edit Data Siswa';
+                document.getElementById('siswa-nama').value = s.nama;
+                document.getElementById('siswa-nisn').value = s.nisn;
+                document.getElementById('siswa-divisi').value = s.divisi;
+                document.getElementById('siswa-sekolah').value = s.sekolah;
+                toggleModal('modal-siswa', true);
+            }
+        }
+
+        function deleteSiswa(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus siswa ini?')) {
+                let siswa = JSON.parse(localStorage.getItem('data_siswa'));
+                siswa = siswa.filter(s => s.id !== id);
+                localStorage.setItem('data_siswa', JSON.stringify(siswa));
+                renderSiswa(document.getElementById('search-siswa').value);
+                renderRingkasan();
+                showNotification('Siswa berhasil dihapus', 'success');
+            }
+        }
+
+        document.getElementById('form-tambah-siswa').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nama = document.getElementById('siswa-nama').value;
+            const nisn = document.getElementById('siswa-nisn').value;
+            const divisi = document.getElementById('siswa-divisi').value;
+            const sekolah = document.getElementById('siswa-sekolah').value;
+            let siswa = JSON.parse(localStorage.getItem('data_siswa'));
+
+            if (editSiswaId) {
+                const index = siswa.findIndex(s => s.id === editSiswaId);
+                if (index !== -1) siswa[index] = { id: editSiswaId, nama, nisn, divisi, sekolah };
+            } else {
+                const newId = siswa.length > 0 ? Math.max(...siswa.map(s => s.id)) + 1 : 1;
+                siswa.push({ id: newId, nama, nisn, divisi, sekolah });
+            }
+
+            localStorage.setItem('data_siswa', JSON.stringify(siswa));
+            toggleModal('modal-siswa', false);
+            renderSiswa();
+            renderRingkasan();
+            showNotification('Data siswa berhasil disimpan!', 'success');
+        });
+
+        document.getElementById('form-tambah-laporan').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nama = document.getElementById('laporan-nama').value;
+            const judul = document.getElementById('laporan-judul').value;
+            const detail = document.getElementById('laporan-detail').value;
+            const today = new Date();
+            const tanggal = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            let laporan = JSON.parse(localStorage.getItem('data_laporan'));
+            const newId = laporan.length > 0 ? Math.max(...laporan.map(l => l.id)) + 1 : 1;
+            
+            laporan.unshift({ id: newId, nama, judul, detail, tanggal, status: 'Pending' });
+
+            localStorage.setItem('data_laporan', JSON.stringify(laporan));
+            toggleModal('modal-laporan', false);
+            renderLaporan();
+            renderRingkasan();
+            this.reset();
+            showNotification('Laporan berhasil dikirim!', 'success');
+        });
+
+        function deleteLaporan(id) {
+            if (confirm('Hapus laporan ini?')) {
+                let laporan = JSON.parse(localStorage.getItem('data_laporan'));
+                laporan = laporan.filter(l => l.id !== id);
+                localStorage.setItem('data_laporan', JSON.stringify(laporan));
+                renderLaporan(document.getElementById('filter-status-laporan').value, document.getElementById('search-laporan').value);
+                renderRingkasan();
+                showNotification('Laporan berhasil dihapus', 'success');
+            }
+        }
+
+        document.getElementById('search-siswa').addEventListener('input', function() { renderSiswa(this.value); });
+        document.getElementById('filter-status-laporan').addEventListener('change', function() { renderLaporan(this.value, document.getElementById('search-laporan').value); });
+        document.getElementById('search-laporan').addEventListener('input', function() { renderLaporan(document.getElementById('filter-status-laporan').value, this.value); });
+
+        const profileForm = document.getElementById('form-profil-setting');
+        const avatarInput = document.getElementById('input-avatar-file');
+        const avatarPreview = document.getElementById('setting-avatar-preview');
+
+        function loadProfile() {
+            const profile = JSON.parse(localStorage.getItem('user_profile'));
+            document.getElementById('profile-name-input').value = profile.nama;
+            document.getElementById('profile-role-input').value = profile.role;
+            document.getElementById('sidebar-avatar').src = profile.avatar;
+            document.getElementById('navbar-avatar').src = profile.avatar;
+            document.getElementById('setting-avatar-preview').src = profile.avatar;
+            document.querySelectorAll('.user-name-display').forEach(el => el.textContent = profile.nama);
+            document.querySelectorAll('.user-role-display').forEach(el => el.textContent = profile.role);
+        }
+
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { avatarPreview.src = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const profile = JSON.parse(localStorage.getItem('user_profile'));
+            profile.nama = document.getElementById('profile-name-input').value;
+            profile.role = document.getElementById('profile-role-input').value;
+            
+            if (avatarInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profile.avatar = e.target.result;
+                    localStorage.setItem('user_profile', JSON.stringify(profile));
+                    loadProfile();
+                    showNotification('Profil berhasil diperbarui!', 'success');
+                };
+                reader.readAsDataURL(avatarInput.files[0]);
+            } else {
+                localStorage.setItem('user_profile', JSON.stringify(profile));
+                loadProfile();
+                showNotification('Profil berhasil diperbarui!', 'success');
+            }
+        });
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfile();
+            renderRingkasan();
+            document.querySelector('[data-target="page-ringkasan"]').click();
+        });
+
+        window.addEventListener('click', function(e) {
+            if (e.target.id === 'modal-siswa') toggleModal('modal-siswa', false);
+            if (e.target.id === 'modal-laporan') toggleModal('modal-laporan', false);
+        });
+    </script>
+</body>
+</html>
